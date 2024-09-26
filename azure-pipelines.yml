@@ -21,6 +21,10 @@ steps:
       cd backend
       poetry install
     displayName: 'Install backend dependencies'
+    
+  - script: |
+      npm install -g pnpm
+    displayName: 'Install pnpm'
 
   - script: |
       pnpm install
@@ -40,6 +44,7 @@ steps:
 
   - script: |
       poetry config pypi-token.azuredevops $(ARTIFACTS_PAT)
+      poetry config repositories.azuredevops $(ARTIFACTS_FEED)
       poetry run twine upload --repository azuredevops dist/*
     displayName: 'Upload package to Azure Artifacts'
 
