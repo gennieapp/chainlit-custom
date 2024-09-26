@@ -32,8 +32,10 @@ steps:
     displayName: 'Build frontend with PNPM'
 
   - script: |
-      cp -R app/frontend/dist app/backend/chainlit/frontend/dist
-      cp -R app/libs/copilot/dist app/backend/chainlit/copilot/dist
+      mkdir -p backend/chainlit/frontend/dist
+      mkdir -p backend/chainlit/copilot/dist
+      cp -R frontend/dist/* backend/chainlit/frontend/dist/
+      cp -R libs/copilot/dist/* backend/chainlit/copilot/dist/
     displayName: 'Copy the built files from the front-end'
 
   - script: |
