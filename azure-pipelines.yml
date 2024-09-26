@@ -1,0 +1,54 @@
+trigger:
+  branches:
+    include:
+      - azure-pipelines
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.x'
+      addToPath: true
+
+  - script: |
+      python -m venv .venv
+      source .venv/bin/activate
+      python -m pip install --upgrade pip
+      pip install poetry
+    displayName: 'Configure Python environment and install Poetry'
+
+  - script: |
+      cd backend
+      poetry install
+    displayName: 'Install backend dependencies'
+
+  - script: |
+      pnpm install
+      pnpm run buildUi
+    displayName: 'Build frontend with PNPM'
+
+  - script: |
+      cp -R app/frontend/dist app/backend/chainlit/frontend/dist
+      cp -R app/libs/copilot/dist app/backend/chainlit/copilot/dist
+    displayName: 'Copy the built files from the front-end'
+
+  - script: |
+      cd backend
+      poetry add --dev build twine
+      poetry build
+    displayName: 'Build package with poetry'
+
+  - script: |
+      poetry config pypi-token.azuredevops $(ARTIFACTS_PAT)
+      poetry run twine upload --repository azuredevops dist/*
+    displayName: 'Upload package to Azure Artifacts'
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)'
+      artifactName: 'dist'
+      publishLocation: 'pipeline'
+    displayName: 'Publish packages as pipeline artifact'
+
