@@ -40,9 +40,8 @@ steps:
     displayName: 'Build package with poetry'
 
   - script: |
-      poetry config pypi-token.azuredevops $(ARTIFACTS_PAT)
-      poetry config repositories.azuredevops $(ARTIFACTS_FEED)
-      poetry run twine upload --repository azuredevops dist/*
+      cd backend
+      poetry run twine upload --repository-url $(ARTIFACTS_FEED) --username "__token__" --password "$(ARTIFACTS_PAT)" dist/*
     displayName: 'Upload package to Azure Artifacts'
 
   - task: PublishPipelineArtifact@1
